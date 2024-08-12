@@ -34,11 +34,17 @@ impl TypstSystemUniverse {
     /// See [`CompileOpts`] for available options.
     pub fn new(mut opts: CompileOpts) -> ZResult<Self> {
         let inputs = std::mem::take(&mut opts.inputs);
+
+        let mut registry = HttpRegistry::default();
+        if let Some(ref cert_path) = opts.cert_path {
+            registry.set_certificate_path(cert_path.clone());
+        }
+
         Ok(Self::new_raw(
             opts.entry.clone().try_into()?,
             Some(Arc::new(Prehashed::new(inputs))),
             Vfs::new(SystemAccessModel {}),
-            HttpRegistry::default(),
+            registry,
             Arc::new(Self::resolve_fonts(opts)?),
         ))
     }
