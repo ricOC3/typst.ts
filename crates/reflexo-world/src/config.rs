@@ -33,6 +33,9 @@ pub struct CompileOpts {
     #[serde(rename = "withEmbeddedFonts")]
     #[serde_as(as = "Vec<AsCowBytes>")]
     pub with_embedded_fonts: Vec<Cow<'static, [u8]>>,
+
+    /// Path to the certification file
+    pub cert_path: Option<String>,
 }
 
 #[serde_as]
