@@ -6,6 +6,7 @@ use std::{
 use log::error;
 use parking_lot::Mutex;
 use reqwest::blocking::Response;
+use reqwest::Certificate;
 use typst::{
     diag::{eco_format, EcoString},
     syntax::package::PackageVersion,
@@ -17,6 +18,7 @@ pub struct HttpRegistry {
     notifier: Arc<Mutex<dyn Notifier + Send>>,
 
     packages: OnceLock<Vec<(PackageSpec, Option<EcoString>)>>,
+    cert_path: Option<String>, // Add a field to hold the optional certificate path
 }
 
 impl Default for HttpRegistry {
@@ -26,6 +28,7 @@ impl Default for HttpRegistry {
 
             // todo: reset cache
             packages: OnceLock::new(),
+            cert_path: None, // Default to None
         }
     }
 }
@@ -58,6 +61,11 @@ impl HttpRegistry {
         }
 
         res
+    }
+
+    /// Set the certificate path to use for HTTP requests.
+    pub fn set_certificate_path(&mut self, path: String) {
+        self.cert_path = Some(path);
     }
 
     /// Make a package available in the on-disk cache.
@@ -114,7 +122,7 @@ impl HttpRegistry {
                     std::fs::remove_dir_all(package_dir).ok();
                     PackageError::MalformedArchive(Some(eco_format!("{err}")))
                 })
-        })
+        }, self.cert_path.as_deref())
         .ok_or_else(|| PackageError::Other(Some(eco_format!("cannot spawn http thread"))))?
     }
 }
@@ -166,7 +174,7 @@ impl PackageRegistry for HttpRegistry {
                         )
                     })
                     .collect::<Vec<_>>()
-            })
+            }, self.cert_path.as_deref())
             .unwrap_or_default()
         })
     }
@@ -175,10 +183,23 @@ impl PackageRegistry for HttpRegistry {
 fn threaded_http<T: Send + Sync>(
     url: &str,
     f: impl FnOnce(Result<Response, reqwest::Error>) -> T + Send + Sync,
+    cert_path: Option<&str>, // Add an optional certificate path parameter
 ) -> Option<T> {
     std::thread::scope(|s| {
-        s.spawn(|| {
-            let client = reqwest::blocking::Client::builder().build().unwrap();
+        s.spawn(move || {
+            let client_builder = reqwest::blocking::Client::builder();
+
+            let client = if let Some(cert_path) = cert_path {
+                let cert = std::fs::read(cert_path).ok().and_then(|buf| Certificate::from_pem(&buf).ok());
+                if let Some(cert) = cert {
+                    client_builder.add_root_certificate(cert).build().unwrap()
+                } else {
+                    client_builder.build().unwrap()
+                }
+            } else {
+                client_builder.build().unwrap()
+            };
+
             f(client.get(url).send())
         })
         .join()
