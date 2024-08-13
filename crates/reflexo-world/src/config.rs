@@ -35,7 +35,7 @@ pub struct CompileOpts {
     pub with_embedded_fonts: Vec<Cow<'static, [u8]>>,
 
     /// Path to the certification file
-    pub cert_path: Option<String>,
+    pub cert_path: Option<PathBuf>,
 }
 
 #[serde_as]

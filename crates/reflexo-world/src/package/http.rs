@@ -1,5 +1,5 @@
 use std::{
-    path::Path,
+    path::{Path, PathBuf},
     sync::{Arc, OnceLock},
 };
 
@@ -18,7 +18,8 @@ pub struct HttpRegistry {
     notifier: Arc<Mutex<dyn Notifier + Send>>,
 
     packages: OnceLock<Vec<(PackageSpec, Option<EcoString>)>>,
-    cert_path: Option<String>, // Add a field to hold the optional certificate path
+
+    cert_path: Option<PathBuf>,
 }
 
 impl Default for HttpRegistry {
@@ -64,7 +65,7 @@ impl HttpRegistry {
     }
 
     /// Set the certificate path to use for HTTP requests.
-    pub fn set_certificate_path(&mut self, path: String) {
+    pub fn set_certificate_path(&mut self, path: PathBuf) {
         self.cert_path = Some(path);
     }
 
@@ -183,7 +184,7 @@ impl PackageRegistry for HttpRegistry {
 fn threaded_http<T: Send + Sync>(
     url: &str,
     f: impl FnOnce(Result<Response, reqwest::Error>) -> T + Send + Sync,
-    cert_path: Option<&str>, // Add an optional certificate path parameter
+    cert_path: Option<&Path>,
 ) -> Option<T> {
     std::thread::scope(|s| {
         s.spawn(move || {
