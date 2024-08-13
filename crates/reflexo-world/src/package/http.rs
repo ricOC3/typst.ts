@@ -65,8 +65,8 @@ impl HttpRegistry {
     }
 
     /// Set the certificate path to use for HTTP requests.
-    pub fn set_certificate_path(&mut self, path: PathBuf) {
-        self.cert_path = Some(path);
+    pub fn set_certificate_path(&mut self, path: &Path) {
+        self.cert_path = Some(path.to_path_buf());
     }
 
     /// Make a package available in the on-disk cache.

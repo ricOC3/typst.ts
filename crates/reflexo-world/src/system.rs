@@ -37,7 +37,7 @@ impl TypstSystemUniverse {
 
         let mut registry = HttpRegistry::default();
         if let Some(ref cert_path) = opts.cert_path {
-            registry.set_certificate_path(cert_path.clone());
+            registry.set_certificate_path(cert_path);
         }
 
         Ok(Self::new_raw(
