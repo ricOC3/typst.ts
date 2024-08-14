@@ -233,6 +233,9 @@ pub struct CompileOpts {
     /// Additional input arguments to compile the entry file.
     pub inputs: Dict,
 
+    /// Path to the certification file
+    pub cert_path: Option<PathBuf>,
+
     /// Path to font profile for cache
     #[serde(rename = "fontProfileCachePath")]
     pub font_profile_cache_path: PathBuf,
