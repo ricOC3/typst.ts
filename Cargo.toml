@@ -212,8 +212,8 @@ reflexo-vec2canvas = { version = "0.5.0-rc6", path = "crates/conversion/vec2canv
 reflexo-vec2sema = { version = "0.5.0-rc6", path = "crates/conversion/vec2sema" }
 reflexo-vec2bbox = { version = "0.5.0-rc6", path = "crates/conversion/vec2bbox" }
 
-typst-ts-core = { version = "0.5.0-rc6", default-features = false }
-typst-ts-compiler = { version = "0.5.0-rc6", default-features = false }
+typst-ts-core = { version = "0.5.0-rc6", default-features = false, path = "core" }
+typst-ts-compiler = { version = "0.5.0-rc6", default-features = false, path = "compiler" }
 typst-ts-test-common = { version = "0.5.0-rc6", path = "tests/common" }
 
 # project exporters
